@@ -3,21 +3,29 @@ TOPPERS-OS用性能評価プログラム
 
 ## フォルダ
 
-- fmp
+- fmp_1.4.0
   - バージョン 1.4.0 
     - [オリジナルのソース](https://toppers.jp/download.cgi/fmp_zynq_gcc-20190929.zip)
   - テストプログラムフォルダ
-    - fmp_1.4.0\perf
+    - perf
   - Zybo Z7 用プロジェクトフォルダ
-    - fmp_1.4.0\target\zynq_gcc\zybo_z7_sdk
+    - target\zynq_gcc\zybo_z7_sdk
 
-- asp
+- asp_1.9.3
   - バージョン 1.9.3
     - [オリジナルのソース](https://www.toppers.jp/download.cgi/asp_zynq_gcc-20190929.zip)
   - オリジナルからの変更点
     - GTMで性能評価が可能とするよう変更．
+  - テストプログラムフォルダ
+    - perf
   - Zybo Z7 用プロジェクトフォルダ
-    - asp_1.9.3\target\zynq_gcc\zybo_z7_sdk 
+    - target\zynq_gcc\zybo_z7_sdk 
+
+- asp3_3.6
+  - テストプログラムフォルダ
+    - perf
+  - Zybo Z7 用プロジェクトフォルダ
+    - target\zynq_gcc\zybo_z7_sdk 
 
 ## 時間計測方法
 
