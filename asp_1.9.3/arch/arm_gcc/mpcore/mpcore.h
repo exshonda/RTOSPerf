@@ -90,13 +90,21 @@
 /*
  * Global Timer関連の定義（r1以上でサポート）
  */
-#define MPCORE_GTC_COUNT_L (MPCORE_PMR_BASE + 0x0200)  /* カウンターレジスタL       */
-#define MPCORE_GTC_COUNT_U (MPCORE_PMR_BASE + 0x0204)  /* カウンターレジスタH       */
-#define MPCORE_GTC_CNT     (MPCORE_PMR_BASE + 0x0208)  /* コントロールレジスタ      */
-#define MPCORE_GTC_COMPV_L (MPCORE_PMR_BASE + 0x0210)  /* コンペアバリューレジスタL */
-#define MPCORE_GTC_COMPV_U (MPCORE_PMR_BASE + 0x0214)  /* コンペアバリューレジスタH */
+#define MPCORE_GTM_COUNT_L (MPCORE_PMR_BASE + 0x0200)  /* カウンターレジスタL       */
+#define MPCORE_GTM_COUNT_U (MPCORE_PMR_BASE + 0x0204)  /* カウンターレジスタH       */
+#define MPCORE_GTM_CNT     (MPCORE_PMR_BASE + 0x0208)  /* コントロールレジスタ      */
+#define MPCORE_GTM_ISR     (MPCORE_PMR_BASE + 0x020C)  /* 割込みステータスレジスタ  */
+#define MPCORE_GTM_COMPV_L (MPCORE_PMR_BASE + 0x0210)  /* コンペアバリューレジスタL */
+#define MPCORE_GTM_COMPV_U (MPCORE_PMR_BASE + 0x0214)  /* コンペアバリューレジスタH */
+#define MPCORE_GTM_AIR     (MPCORE_PMR_BASE + 0x0218)  /* オートインクリメントレジスター */
 
-#define MPCORE_GTC_CNT_TIMENA 0x01 /* タイマーイネーブル */
+#define MPCORE_GTM_ISR_EF        0x01
+
+#define MPCORE_GTM_CNT_EN        0x01
+#define MPCORE_GTM_CNT_CE        0x02
+#define MPCORE_GTM_CNT_IEN       0x04
+#define MPCORE_GTM_CNT_AI        0x08
+#define MPCORE_GTM_CNT_PS_OFFSET   8
 
 #endif /* __TARGET_ARCH_ARM == 7 */
 

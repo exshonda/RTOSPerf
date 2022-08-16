@@ -177,5 +177,5 @@ target_exit(void)
  */
 void
 perf_timer_initialize(void) {
-    x_init_pcc();
+    x_init_gtm();
 }

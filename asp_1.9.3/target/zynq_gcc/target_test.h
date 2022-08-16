@@ -48,4 +48,9 @@
 #define CPUEXC1	EXCH_NO_SVC		/* ソフトウェア例外 */
 #define RAISE_CPU_EXCEPTION	Asm("svc #0")
 
+/*
+ *  Include chip-dependent header (MPCORE)
+ */
+#include "arm_gcc/mpcore/chip_test.h"
+
 #endif /* TOPPERS_TARGET_TEST_H */

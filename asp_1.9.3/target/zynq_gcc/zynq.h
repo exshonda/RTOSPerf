@@ -67,6 +67,9 @@
 #define    INTPRI_SIO0    -3
 #define    INTATR_SIO0     0U
 
+
+#define MPCORE_GTM_CLOCK_FREQ_MHZ  ZYNQ_CPU_3X2X_MHZ
+
 /*
  * Tmer preescaler and load value to achieve 1ms per tick.
  * Note that the preescaler value must be representable with 8 bits;

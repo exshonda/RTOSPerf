@@ -50,6 +50,8 @@
 #ifndef TOPPERS_CHIP_KERNEL_H
 #define TOPPERS_CHIP_KERNEL_H
 
+#include "mpcore.h"
+
 /*
  *  ARMで共通な定義
  */
@@ -77,5 +79,95 @@
  */
 #define TIC_NUME     1U            /* タイムティックの周期の分子 */
 #define TIC_DENO     1U            /* タイムティックの周期の分母 */
+
+#ifndef TOPPERS_MACRO_ONLY
+#if __TARGET_ARCH_ARM == 7
+#ifndef CA9_GLOBA_TIMER
+
+/*
+ *  性能評価用の関数
+ *  CA9/MPCore の r1以降に搭載されている Global Timer を使用する．
+ */
+
+/* 性能計測用のカウンタのデータ型 */
+typedef uint64_t PERFCNT_GTM;
+
+/*
+ *  パフォーマンスカウンタの初期化
+ */
+Inline void
+x_init_gtm(void)
+{
+	/* カウント停止 */
+	sil_wrw_mem((void *)MPCORE_GTM_CNT, 0);
+
+	/* カウンターレジスタの初期化 */
+	sil_wrw_mem((void *)MPCORE_GTM_COUNT_L, 0);
+	sil_wrw_mem((void *)MPCORE_GTM_COUNT_U, 0);
+
+	/* コンペアバリューレジスタの初期化 */
+	sil_wrw_mem((void *)MPCORE_GTM_COMPV_L, 0xffffffff);
+	sil_wrw_mem((void *)MPCORE_GTM_COMPV_U, 0xffffffff);
+
+	/* カウント開始 */
+	sil_wrw_mem((void *)MPCORE_GTM_CNT, MPCORE_GTM_CNT_EN);
+}
+
+/*
+ *  パフォーマンスカウンタの読み込み
+ */
+Inline void
+x_get_gtm(PERFCNT_GTM *p_count)
+{
+	uint32_t count_l;
+	uint32_t count_h_p, count_h;
+
+	/*
+	 * 32bitカウンタ2個で64bitカウンタを実現されているため，
+	 * 桁上げを考慮した読み込みとする．
+	 */
+	count_h_p = sil_rew_mem((void *)MPCORE_GTM_COUNT_U);
+	count_l = sil_rew_mem((void *)MPCORE_GTM_COUNT_L);
+	count_h = sil_rew_mem((void *)MPCORE_GTM_COUNT_U);
+	if (count_h_p != count_h) {
+		count_l = sil_rew_mem((void *)MPCORE_GTM_COUNT_L);
+	}
+
+	*p_count = count_h;
+	*p_count = *p_count << 32;
+	*p_count += count_l;
+}
+
+/*
+ *  パフォーマンスカウンタのリセット
+ */
+Inline void
+x_rst_gtm(void)
+{
+	uint32_t tmp, tmp1;
+
+	/* カウンタ停止 */
+	tmp = sil_rew_mem((void *)MPCORE_GTM_CNT);
+	tmp1 = tmp & ~MPCORE_GTM_CNT_EN;
+	sil_wrw_mem((void *)MPCORE_GTM_CNT, tmp1);
+
+	/* カウンターレジスタの初期化 */
+	sil_wrw_mem((void *)MPCORE_GTM_COUNT_L, 0);
+	sil_wrw_mem((void *)MPCORE_GTM_COUNT_U, 0);
+
+	/* カウンタ再開 */
+	sil_wrw_mem((void *)MPCORE_GTM_CNT, tmp);
+}
+
+/*
+ *  カウンタ値のnsecへの変換
+ */
+Inline uint64_t
+x_cnv_nsec_gtm(PERFCNT_GTM count) {
+	return (count * (1000U / MPCORE_GTM_CLOCK_FREQ_MHZ));
+}
+#endif /* CA9_GLOBA_TIMER */
+#endif /* __TARGET_ARCH_ARM == 7 */
+#endif /* TOPPERS_MACRO_ONLY */
 
 #endif /* TOPPERS__KERNEL_H */

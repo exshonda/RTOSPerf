@@ -14,8 +14,15 @@ TOPPERS-OS用性能評価プログラム
 - asp
   - バージョン 1.9.3
     - [オリジナルのソース](https://www.toppers.jp/download.cgi/asp_zynq_gcc-20190929.zip)
+  - オリジナルからの変更点
+    - GTMで性能評価が可能とするよう変更．
   - Zybo Z7 用プロジェクトフォルダ
     - asp_1.9.3\target\zynq_gcc\zybo_z7_sdk 
+
+## 時間計測方法
+
+グローバルタイマー（GTM）で計測しナノ秒で取得する．
+
 
 ## テストプログラム
 

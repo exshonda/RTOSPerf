@@ -45,16 +45,22 @@
 #ifndef TOPPERS_CHIP_TEST_H
 #define TOPPERS_CHIP_TEST_H
 
-#define HISTTIM PERFCNT
-#define HIST_GET_TIM(p_time)  ((void) x_get_pcc(p_time));
-#define HIST_CONV_TIM(time)   (x_cnv_nsec(time))
-#define HIST_BM_HOOK()        (x_rst_pcc())
+#define HISTTIM PERFCNT_GTM
+#define HIST_GET_TIM(p_time)  ((void) x_get_gtm(p_time));
+#define HIST_CONV_TIM(time)   (x_cnv_nsec_gtm(time))
+#define HIST_BM_HOOK()        (x_rst_gtm())
 
 /*
  *  チップで共通な定義
  */
+#ifndef CPUEXC1
 #define CPUEXC1				4		/* ロードエラー例外 */
+#endif  /* CPUEXC1 */
+
+#ifndef RAISE_CPU_EXCEPTION
 #define RAISE_CPU_EXCEPTION	(*((volatile int *) 0xFFFFFEC1U))
+#endif /* RAISE_CPU_EXCEPTION */
+
 #define CANNOT_RETURN_CPUEXC
 
 #endif /* TOPPERS_CHIP_TEST_H */
