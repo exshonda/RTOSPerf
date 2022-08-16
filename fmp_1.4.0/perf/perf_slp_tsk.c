@@ -94,7 +94,6 @@ void perf_eval(uint_t n)
 	init_hist(1, MAX_TIME, histarea1);
 	init_hist(2, MAX_TIME, histarea2);
 
-	sus_tsk(LOGTASK1);
 	dly_tsk(1000);
 	CPU1_PERF_PRE_HOOK;
 
@@ -119,8 +118,6 @@ void perf_eval(uint_t n)
 	}
 
 	CPU1_PERF_POST_HOOK;
-	rsm_tsk(LOGTASK1);
-
 
 	syslog(LOG_NOTICE, "==================================");
 	syslog(LOG_NOTICE, "(%d)", n);
@@ -140,6 +137,7 @@ void perf_eval(uint_t n)
  */
 void main_task1(intptr_t exinf)
 {
+	syslog(LOG_NOTICE, "perf_slp_tsk for fmp");
 	perf_eval(0);
 	perf_eval(1);
 }

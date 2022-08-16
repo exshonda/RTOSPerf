@@ -129,7 +129,7 @@ void perf_eval(uint_t n)
 	syslog(LOG_NOTICE, "(%d)", n);
 	syslog(LOG_NOTICE, "----------------------------------");
 	print_hist(1);
-	test_finish();
+//	test_finish();
 }
 
 /*
@@ -137,6 +137,7 @@ void perf_eval(uint_t n)
  */
 void main_task1(intptr_t exinf)
 {
+	syslog(LOG_NOTICE, "perf_sig_sem for fmp");
 	perf_eval(0);
 	perf_eval(1);
 	perf_eval(2);
