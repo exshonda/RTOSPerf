@@ -22,6 +22,10 @@ TOPPERS-OS用性能評価プログラム
     - target\zynq_gcc\zybo_z7_sdk 
 
 - asp3_3.6
+  - バージョン 3.6
+    - [オリジナルのソース](https://toppers.jp/download.cgi/asp3_zybo_z7_gcc-20210105.zip)
+  - オリジナルからの変更点
+    - GTMの分周比を1として性能評価もGTMを使用して実施する．
   - テストプログラムフォルダ
     - perf
   - Zybo Z7 用プロジェクトフォルダ
