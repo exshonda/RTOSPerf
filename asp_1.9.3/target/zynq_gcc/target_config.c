@@ -171,3 +171,11 @@ target_exit(void)
 	 */
 	while(1);
 }
+
+/*
+ *  性能評価用タイマーの初期化
+ */
+void
+perf_timer_initialize(void) {
+    x_init_pcc();
+}

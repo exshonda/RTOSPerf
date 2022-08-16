@@ -6,6 +6,8 @@ TOPPERS-OS用性能評価プログラム
 - fmp
   - バージョン 1.4.0 
     - [オリジナルのソース](https://toppers.jp/download.cgi/fmp_zynq_gcc-20190929.zip)
+  - テストプログラムフォルダ
+    - fmp_1.4.0\perf
   - Zybo Z7 用プロジェクトフォルダ
     - fmp_1.4.0\target\zynq_gcc\zybo_z7_sdk
 
@@ -13,7 +15,7 @@ TOPPERS-OS用性能評価プログラム
   - バージョン 1.9.3
     - [オリジナルのソース](https://www.toppers.jp/download.cgi/asp_zynq_gcc-20190929.zip)
   - Zybo Z7 用プロジェクトフォルダ
-    - fmp_1.4.0\target\zynq_gcc\zybo_z7_sdk 
+    - asp_1.9.3\target\zynq_gcc\zybo_z7_sdk 
 
 ## テストプログラム
 
