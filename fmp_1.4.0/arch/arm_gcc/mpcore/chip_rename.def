@@ -1,0 +1,19 @@
+# chip_config.c
+chip_mprc_initialize
+chip_initialize
+chip_exit
+default_int_handler
+
+# kernel_cfg.c
+p_inh_table
+p_private_cfgint_table
+global_cfgint_table
+
+# mpcore.c
+mmu_map_memory
+scu_init
+scu_counter_init
+smp_mode_enable
+mmu_init
+
+INCLUDE "arm_gcc/common/core"
