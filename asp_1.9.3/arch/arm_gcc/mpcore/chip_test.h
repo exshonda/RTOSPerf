@@ -48,7 +48,10 @@
 #define HISTTIM PERFCNT_GTM
 #define HIST_GET_TIM(p_time)  ((void) x_get_gtm(p_time));
 #define HIST_CONV_TIM(time)   (x_cnv_nsec_gtm(time))
-#define HIST_BM_HOOK()        (x_rst_gtm())
+//#define HIST_CONV_TIM(time)   (time)
+//#define HIST_BM_HOOK()        (x_rst_pcc())
+#define HIST_BM_HOOK()
+
 
 /*
  *  チップで共通な定義

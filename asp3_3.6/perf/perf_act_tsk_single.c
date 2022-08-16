@@ -43,9 +43,9 @@
 
 #include <kernel.h>
 #include <t_syslog.h>
-#include <test_lib.h>
 #include <sil.h>
-#include <histogram.h>
+#include "syssvc/syslog.h"
+#include "syssvc/histogram.h"
 #include "kernel_cfg.h"
 #include "perf_act_tsk_single.h"
 #include "target_test.h"
@@ -55,11 +55,6 @@
  */
 #define NO_MEASURE	20000U			/* 計測回数 */
 #define MAX_TIME	400000U			/* 実行時間分布を記録する最大時間 */
-
-/*
- *  実行時間分布を記録するメモリ領域
- */
-static uint_t	histarea1[MAX_TIME + 1];
 
 /*
  *  計測の前後でのフックルーチン
@@ -102,9 +97,9 @@ void perf_eval(uint_t n)
 {
 	uint_t	i;
 
-	init_hist(1, MAX_TIME, histarea1);
-	syslog_flush();
-	dly_tsk(1000);
+	init_hist(1);
+	syslog_fls_log();
+	dly_tsk(1000000);
     
 	CPU1_PERF_PRE_HOOK;
 
@@ -153,7 +148,7 @@ void perf_eval(uint_t n)
  */
 void main_task1(intptr_t exinf)
 {
-	syslog(LOG_NOTICE, "perf_act_tsk_single for asp");
+	syslog(LOG_NOTICE, "perf_act_tsk_single for asp3");
 	perf_eval(0);
 	perf_eval(1);
 	perf_eval(2);

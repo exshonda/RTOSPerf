@@ -63,8 +63,11 @@
 #define MPCORE_WDG_PS_VALUE		64
 #define MPCORE_WDG_FREQ			5
 
-#define MPCORE_GTC_PS_VALUE		64
-#define MPCORE_GTC_FREQ			5
+//#define MPCORE_GTC_PS_VALUE		64
+//#define MPCORE_GTC_FREQ			5
+
+#define MPCORE_GTC_PS_VALUE		0
+#define MPCORE_GTC_FREQ			356U
 
 /*
  *  UARTの設定値の定義（115.2Kbpsで動作させる場合）

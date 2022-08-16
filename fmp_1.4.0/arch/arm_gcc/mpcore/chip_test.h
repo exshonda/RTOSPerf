@@ -79,6 +79,8 @@
 #define HISTTIM  PERFCNT
 #define HIST_GET_TIM(p_time)  ((void) x_get_pcc(p_time));
 #define HIST_CONV_TIM(time)   (x_cnv_nsec(time))
-#define HIST_BM_HOOK()        (x_rst_pcc())
+//#define HIST_CONV_TIM(time)   (time)
+//#define HIST_BM_HOOK()        (x_rst_pcc())
+#define HIST_BM_HOOK()
 
 #endif /* TOPPERS_CHIP_TEST_H */
