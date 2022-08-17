@@ -100,7 +100,7 @@ void task2_2(intptr_t exinf)
 {
 	for ( ; ; )
 	{
-		BUSY_WAIT(10000);
+		BUSY_WAIT(10000000);
 	}
 }
 
