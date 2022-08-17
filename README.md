@@ -31,8 +31,8 @@ TOPPERS-OS用性能評価プログラム
   - Zybo Z7 用プロジェクトフォルダ
     - target\zybo_z7_gcc\xilinx_sdk 
 
-- asp3_3.6
-  - バージョン 3.6
+- fmp3_3.2
+  - バージョン 3.2
     - [オリジナルのソース](https://toppers.jp/download.cgi/fmp3_zybo_z7_gcc-20210108.zip)
   - オリジナルからの変更点
     - GTMの分周比を1として性能評価もGTMを使用して実施する．
@@ -41,6 +41,16 @@ TOPPERS-OS用性能評価プログラム
   - Zybo Z7 用プロジェクトフォルダ
     - target\zybo_z7_gcc\xilinx_sdk 
 
+
+
+## 使用方法
+
+OS毎にプロジェクトフォルダにワークスペースを作成して，プロジェクトをイ
+ンポートする．詳細な手順は次の通り．
+
+File -> Import, General->Existing Projects into Workspace を選択して
+Next．select root directoryのBrowseのボタンを押してOK. Projectsにイン
+ポートされるプロジェクトが表示されるのでfinishを押してインポートする．
 
 
 

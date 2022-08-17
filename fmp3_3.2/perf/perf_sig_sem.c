@@ -2,10 +2,10 @@
  *  TOPPERS Software
  *      Toyohashi Open Platform for Embedded Real-Time Systems
  *
- *  Copyright (C) 2012-2018 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2009-2010 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  *
- *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -34,42 +34,106 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  *
- *  $Id: zybo_z7.h 166 2019-08-28 07:54:41Z ertl-honda $
+ *  @(#) $Id: perf_sig_sem.c 1203 2016-07-18 07:05:08Z ertl-honda $
  */
 
 /*
- *		ZYBO_Z7のハードウェア資源の定義
+ *  sig_sem 性能測定プログラム
  */
-#ifndef TOPPERS_ZYBO_Z7_H
-#define TOPPERS_ZYBO_Z7_H
+
+#include <kernel.h>
+#include <t_syslog.h>
+#include <sil.h>
+#include "syssvc/syslog.h"
+#include "syssvc/histogram.h"
+#include "kernel_cfg.h"
+#include "perf_sig_sem.h"
+#include "target_test.h"
 
 /*
- *  各クロック周波数の定義
+ *  計測回数と実行時間分布を記録する最大時間
  */
-#define ZYNQ_CPU_6X4X_MHZ		667U		/* 667MHz */
-#define ZYNQ_CPU_3X2X_MHZ		356U		/* 356MHz */
-#define ZYNQ_CPU_2X_MHZ			222U		/* 222MHz */
-#define ZYNQ_CPU_1X_MHZ			111U		/* 111MHz */
+#define NO_MEASURE	20000U			/* 計測回数 */
+#define MAX_TIME	400000U			/* 実行時間分布を記録する最大時間 */
 
 /*
- *  各タイマのプリスケール値と周波数の定義
- *
- *  周辺デバイス向けクロック（ZYNQ_CPU_3X2X_MZ，356MHz）を73分周して，
- *  5MHzの周波数で使用する．
+ *  計測の前後でのフックルーチン
  */
-#define MPCORE_TMR_PS_VALUE		62
-#define MPCORE_TMR_FREQ			5
+#ifndef CPU1_PERF_PRE_HOOK
+#define CPU1_PERF_PRE_HOOK
+#endif  /* CPU1_PERF_PRE_HOOK */
+#ifndef CPU1_PERF_POST_HOOK
+#define CPU1_PERF_POST_HOOK
+#endif  /* CPU1_PERF_POST_HOOK */
+#ifndef CPU2_PERF_PRE_HOOK
+#define CPU2_PERF_PRE_HOOK
+#endif  /* CPU2_PERF_PRE_HOOK */
+#ifndef CPU2_PERF_POST_HOOK
+#define CPU2_PERF_POST_HOOK
+#endif  /* CPU2_PERF_POST_HOOK */
 
-#define MPCORE_WDG_PS_VALUE		62
-#define MPCORE_WDG_FREQ			5
-
-#define MPCORE_GTC_PS_VALUE		0
-#define MPCORE_GTC_FREQ			356U
+void task1_1(intptr_t exinf)
+{
+	wai_sem(SEM1);
+}
 
 /*
- *  UARTの設定値の定義（115.2Kbpsで動作させる場合）
+ * 計測ルーチン
  */
-#define XUARTPS_BAUDGEN_115K	0x7cU
-#define XUARTPS_BAUDDIV_115K	0x06U
+void perf_eval(uint_t n)
+{
+	uint_t	i;
 
-#endif /* TOPPERS_ZYBO_Z7_H */
+	init_hist(1);
+	syslog_fls_log();
+
+	dly_tsk(1000000);
+	CPU1_PERF_PRE_HOOK;
+
+	for ( i = 0; i < NO_MEASURE; i++ ) {
+		switch (n) {
+			//オーバーヘッドの測定
+		case 0:
+			begin_measure(1);
+			end_measure(1);
+			break;
+			//【１】セマフォに対する待ちタスクが存在せず，セマフォ資源数に1加える．
+		case 1:
+			begin_measure(1);
+			sig_sem(SEM1);
+			end_measure(1);
+			wai_sem(SEM1);
+			break;
+			//【２】セマフォに対する待ちタスクが存在する．sig_semを実行
+			//      するタスク（実行タスク）と同じプロセッサに割り付けら
+			//      れており，優先度は実行タスクより低い
+		case 2:
+			act_tsk(TASK1_1);
+			chg_pri(0, HIGH_PRIORITY);
+			begin_measure(1);
+			sig_sem(SEM1);
+			end_measure(1);
+			chg_pri(0, MID_PRIORITY);
+			break;
+		}
+	}
+
+	CPU1_PERF_POST_HOOK;
+
+	syslog(LOG_NOTICE, "==================================");
+	syslog(LOG_NOTICE, "(%d)", n);
+	syslog(LOG_NOTICE, "----------------------------------");
+	print_hist(1);
+//	test_finish();
+}
+
+/*
+ *  PE1 メインタスク：中優先度
+ */
+void main_task1(intptr_t exinf)
+{
+	syslog(LOG_NOTICE, "perf_sig_sem for fmp3");
+	perf_eval(0);
+	perf_eval(1);
+	perf_eval(2);
+}

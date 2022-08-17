@@ -185,9 +185,9 @@ CFLAGS = $(COPTS) $(CDEFS) $(INCLUDES)
 #
 #  アプリケーションプログラムに関する定義
 #
-APPLNAME = sample1
-APPLDIRS = $(SRCDIR)/sample
-APPL_CFG = sample1.cfg
+APPLNAME = perf_act_tsk
+APPLDIRS = ../../../../perf/
+APPL_CFG = perf_act_tsk.cfg
 APPL_CDL = sample1.cdl
 
 APPL_DIRS := $(APPLDIRS) $(SRCDIR)/library
@@ -196,7 +196,7 @@ ifdef USE_CXX
 	APPL_CXXOBJS := sample1.o
 	APPL_COBJS :=
 else
-	APPL_COBJS := sample1.o
+	APPL_COBJS := perf_act_tsk.o histogram.o
 endif
 APPL_COBJS := $(APPL_COBJS) $(TECS_USER_COBJS) $(TECS_OUTOFDOMAIN_COBJS) \
 				log_output.o vasyslog.o t_perror.o strerror.o
