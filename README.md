@@ -43,7 +43,7 @@ TOPPERS-OS用性能評価プログラム
 
 
 
-## 使用方法
+## ワークスペースの作成
 
 OS毎にプロジェクトフォルダにワークスペースを作成して，プロジェクトをイ
 ンポートする．詳細な手順は次の通り．
@@ -52,7 +52,9 @@ File -> Import, General->Existing Projects into Workspace を選択して
 Next．select root directoryのBrowseのボタンを押してOK. Projectsにイン
 ポートされるプロジェクトが表示されるのでfinishを押してインポートする．
 
+## 文字化けを治す方法．
 
+Window -> Preference, General -> Workspace, 左下の Text file encoding を Other UTF-8 とする．
 
 
 ## 時間計測方法
