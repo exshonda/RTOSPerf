@@ -39,9 +39,9 @@ TOPPERS-OS用性能評価プログラム(PICO用フォルダ)
 
 ## 開発環境の構築
 - WSLのインストール
- - Ubuntu 20.04 をインストール(WSL1で良い)
- 	- https://se-abeaver.com/wsl2-guide/
- - ターミナルを起動してビルドに必要なパッケージのインストール
+	- Ubuntu 20.04 をインストール(WSL1で良い)
+ 		- https://se-abeaver.com/wsl2-guide/
+ 	- ターミナルを起動してビルドに必要なパッケージのインストール
 	```bash
 	sudo apt update
 	sudo apt install -y build-essential gcc-arm-none-eabi ruby git
