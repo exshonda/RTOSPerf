@@ -41,7 +41,8 @@ TOPPERS-OS用性能評価プログラム
   - Zybo Z7 用プロジェクトフォルダ
     - target\zybo_z7_gcc\xilinx_sdk 
 
-
+- pico
+   - ラズパイpico用フォルダ
 
 ## ワークスペースの作成
 
