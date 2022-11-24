@@ -1,9 +1,8 @@
 /*
- *  TOPPERS/FMP Kernel
- *      Toyohashi Open Platform for Embedded Real-Time Systems/
- *      Advanced Standard Profile Kernel
+ *  TOPPERS Software
+ *      Toyohashi Open Platform for Embedded Real-Time Systems
  * 
- *  Copyright (C) 2007,2011-2015 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2009 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
@@ -35,63 +34,34 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  @(#) $Id: perf_sig_sem.h 1203 2016-07-18 07:05:08Z ertl-honda $
  */
 
 /*
- * システムサービスのターゲット依存部（RaspberryPi Pico用）
- *
- * システムサービスのターゲット依存部のインクルードファイル．このファ
- * イルの内容は，コンポーネント記述ファイルに記述され，このファイルは
- * 無くなる見込み．
+ *  各タスクの優先度の定義
  */
-#ifndef TOPPERS_TARGET_SYSSVC_H
-#define TOPPERS_TARGET_SYSSVC_H
+/* メインタスクの優先度 */
+#define MAIN_PRIORITY	10
 
-#ifdef TOPPERS_OMIT_TECS
+/* 並列に実行されるタスクの優先度 */
+#define HIGH_PRIORITY	9
+#define MID_PRIORITY	10
+#define LOW_PRIORITY	11
 
 /*
- * 起動メッセージのターゲットシステム名
+ *  ターゲットに依存する可能性のある定数の定義
  */
-#define TARGET_NAME "RaspberryPi Pico"
+#ifndef STACK_SIZE
+#define	STACK_SIZE		4096		/* タスクのスタックサイズ */
+#endif /* STACK_SIZE */
+
+#define PRCID_WAIT(TASK,PRCID) { T_RTSK  ___rtsk; do { ref_tsk(TASK, &___rtsk); } while ( ___rtsk.prcid != PRCID );}
+#define STAT_WAIT(TASK,TTS) {T_RTSK  ___rtsk; do { ref_tsk(TASK, &___rtsk); } while ( ___rtsk.tskstat != TTS );}
+#define BUSY_WAIT(TIME) sil_dly_nse(TIME)
 
 /*
- * シリアルインタフェースドライバを実行するクラスの定義
+ *  関数のプロトタイプ宣言
  */
-#define CLS_SERIAL CLS_PRC1
-
-/*
- * システムログの低レベル出力のための文字出力
- *
- * ターゲット依存の方法で，文字cを表示/出力/保存する．
- */
-extern void target_fput_log(char c);
-
-/*
- * 低レベル出力で使用するSIOポート
- */
-#define SIOPID_FPUT 1
-
-#endif /* TOPPERS_OMIT_TECS */
-
-/*
- * チップ共有のハードウェア資源の読み込み
- */
-#include "chip_syssvc.h"
-
-#include <sil.h>
-#include "rpi_pico.h"
-
-#define RP2040_PWM_BASE 0x40050000
-#define RP2040_PWM_CSR(n) ((uint32_t *)(RP2040_PWM_BASE + 0x00 + 4 * (n)))
-#define RP2040_PWM_DIV(n) ((uint32_t *)(RP2040_PWM_BASE + 0x04 + 4 * (n)))
-#define RP2040_PWM_CTR(n) ((uint32_t *)(RP2040_PWM_BASE + 0x08 + 4 * (n)))
-#define RP2040_PWM_CC(n)  ((uint32_t *)(RP2040_PWM_BASE + 0x0C + 4 * (n)))
-#define RP2040_PWM_TOP(n) ((uint32_t *)(RP2040_PWM_BASE + 0x10 + 4 * (n)))
-
-#define RP2040_HIST_PWM_CH 0
-
-#define HIST_BM_HOOK() sil_wrw_mem(RP2040_PWM_CTR(RP2040_HIST_PWM_CH), 0) /* Reset counter to 0 */
-#define HIST_GET_TIM(p_time) *(p_time) = sil_rew_mem(RP2040_PWM_CTR(RP2040_HIST_PWM_CH)) /* Get counter value */
-#define HIST_CONV_TIM(time)   (time * 100U / (CPU_CLOCK_HZ/1000000U))
-
-#endif /* TOPPERS_TARGET_SYSSVC_H */
+extern void perf_timer_initialize(intptr_t exinf); 
+extern void	main_task1(intptr_t exinf);
+extern void	task1_1(intptr_t exinf);

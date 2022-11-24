@@ -17,6 +17,10 @@ TOPPERS-OS用性能評価プログラム(PICO用フォルダ)
 	- https://www.toppers.jp/download.cgi/fmp3_raspberrypi_pico_gcc-20211016.tar.gz から取得
 	- obj : プロジェクトフォルダ
 		- obj_sample1 : sample1用フォルダ
+		- obj_perf_act_tsk : perf_act_tsk用フォルダ
+		- obj_perf_act_tsk_single : perf_act_tsk_single用フォルダ
+		- obj_perf_sig_sem : perf_sig_sem用フォルダ
+		- obj_perf_slp_tsk : perf_slp_tsk用フォルダ
 
 - openocd-w64
 	- MSYS2でビルドしたもの．

@@ -1,11 +1,10 @@
 /*
- *  TOPPERS/FMP Kernel
- *      Toyohashi Open Platform for Embedded Real-Time Systems/
- *      Advanced Standard Profile Kernel
- * 
- *  Copyright (C) 2007,2011-2015 by Embedded and Real-Time Systems Laboratory
+ *  TOPPERS Software
+ *      Toyohashi Open Platform for Embedded Real-Time Systems
+ *
+ *  Copyright (C) 2008-2010 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
- * 
+ *
  *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
@@ -28,70 +27,130 @@
  *      また，本ソフトウェアのユーザまたはエンドユーザからのいかなる理
  *      由に基づく請求からも，上記著作権者およびTOPPERSプロジェクトを
  *      免責すること．
- * 
+ *
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
  *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，特定の使用目的
  *  に対する適合性も含めて，いかなる保証も行わない．また，本ソフトウェ
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
- * 
- */
-
-/*
- * システムサービスのターゲット依存部（RaspberryPi Pico用）
  *
- * システムサービスのターゲット依存部のインクルードファイル．このファ
- * イルの内容は，コンポーネント記述ファイルに記述され，このファイルは
- * 無くなる見込み．
+ *  @(#) $Id: perf_act_tsk.c 1210 2017-04-25 05:39:11Z ertl-honda $
  */
-#ifndef TOPPERS_TARGET_SYSSVC_H
-#define TOPPERS_TARGET_SYSSVC_H
-
-#ifdef TOPPERS_OMIT_TECS
 
 /*
- * 起動メッセージのターゲットシステム名
+ *  act_tsk 性能測定プログラム
  */
-#define TARGET_NAME "RaspberryPi Pico"
 
-/*
- * シリアルインタフェースドライバを実行するクラスの定義
- */
-#define CLS_SERIAL CLS_PRC1
-
-/*
- * システムログの低レベル出力のための文字出力
- *
- * ターゲット依存の方法で，文字cを表示/出力/保存する．
- */
-extern void target_fput_log(char c);
-
-/*
- * 低レベル出力で使用するSIOポート
- */
-#define SIOPID_FPUT 1
-
-#endif /* TOPPERS_OMIT_TECS */
-
-/*
- * チップ共有のハードウェア資源の読み込み
- */
-#include "chip_syssvc.h"
-
+#include <kernel.h>
+#include <t_syslog.h>
 #include <sil.h>
-#include "rpi_pico.h"
+#include "syssvc/syslog.h"
+#include "syssvc/histogram.h"
+#include "kernel_cfg.h"
+#include "target_test.h"
+#include "perf_act_tsk_single.h"
 
-#define RP2040_PWM_BASE 0x40050000
-#define RP2040_PWM_CSR(n) ((uint32_t *)(RP2040_PWM_BASE + 0x00 + 4 * (n)))
-#define RP2040_PWM_DIV(n) ((uint32_t *)(RP2040_PWM_BASE + 0x04 + 4 * (n)))
-#define RP2040_PWM_CTR(n) ((uint32_t *)(RP2040_PWM_BASE + 0x08 + 4 * (n)))
-#define RP2040_PWM_CC(n)  ((uint32_t *)(RP2040_PWM_BASE + 0x0C + 4 * (n)))
-#define RP2040_PWM_TOP(n) ((uint32_t *)(RP2040_PWM_BASE + 0x10 + 4 * (n)))
+/*
+ *  計測回数と実行時間分布を記録する最大時間
+ */
+#define NO_MEASURE	20000U			/* 計測回数 */
+#define MAX_TIME	400000U			/* 実行時間分布を記録する最大時間 */
 
-#define RP2040_HIST_PWM_CH 0
+/*
+ *  計測の前後でのフックルーチン
+ */
+#ifndef CPU1_PERF_PRE_HOOK
+#define CPU1_PERF_PRE_HOOK
+#endif  /* CPU1_PERF_PRE_HOOK */
+#ifndef CPU1_PERF_POST_HOOK
+#define CPU1_PERF_POST_HOOK
+#endif  /* CPU1_PERF_POST_HOOK */
+#ifndef CPU2_PERF_PRE_HOOK
+#define CPU2_PERF_PRE_HOOK
+#endif  /* CPU2_PERF_PRE_HOOK */
+#ifndef CPU2_PERF_POST_HOOK
+#define CPU2_PERF_POST_HOOK
+#endif  /* CPU2_PERF_POST_HOOK */
 
-#define HIST_BM_HOOK() sil_wrw_mem(RP2040_PWM_CTR(RP2040_HIST_PWM_CH), 0) /* Reset counter to 0 */
-#define HIST_GET_TIM(p_time) *(p_time) = sil_rew_mem(RP2040_PWM_CTR(RP2040_HIST_PWM_CH)) /* Get counter value */
-#define HIST_CONV_TIM(time)   (time * 100U / (CPU_CLOCK_HZ/1000000U))
+void task1_1(intptr_t exinf)
+{
+	end_measure(1);
+}
 
-#endif /* TOPPERS_TARGET_SYSSVC_H */
+
+void task1_2(intptr_t exinf)
+{
+	;
+}
+
+
+void task1_3(intptr_t exinf)
+{
+	slp_tsk();
+}
+
+
+/*
+ * 計測ルーチン
+ */
+void perf_eval(uint_t n)
+{
+	uint_t	i;
+
+	init_hist(1);
+	syslog_fls_log();
+	dly_tsk(1000000);
+    
+	CPU1_PERF_PRE_HOOK;
+
+	for ( i = 0; i < NO_MEASURE; i++ ) {
+		switch (n) {
+			//オーバーヘッドの測定
+		case 0:
+			begin_measure(1);
+			end_measure(1);
+			break;
+			//【１】自CPUで最高優先度に
+		case 1:
+			begin_measure(1);
+			act_tsk(TASK1_1);
+			break;
+			//【2】自CPUで起動し，実行可能状態に
+		case 2:
+			begin_measure(1);
+			act_tsk(TASK1_2);
+			end_measure(1);
+			ter_tsk(TASK1_2);
+			break;
+			//【3】自CPUで起動するが，起床待ちのためキューイング数をインクリメント
+		case 3:
+			act_tsk(TASK1_3);
+			begin_measure(1);
+			act_tsk(TASK1_3);
+			end_measure(1);
+			wup_tsk(TASK1_3);
+			wup_tsk(TASK1_3);
+			break;
+		}
+	}
+
+	CPU1_PERF_POST_HOOK;
+
+	syslog(LOG_NOTICE, "==================================");
+	syslog(LOG_NOTICE, "(%d)", n);
+	syslog(LOG_NOTICE, "----------------------------------");
+	print_hist(1);
+//	test_finish();
+}
+
+/*
+ *  PE1 メインタスク：中優先度
+ */
+void main_task1(intptr_t exinf)
+{
+	syslog(LOG_NOTICE, "perf_act_tsk_single for fmp3");
+	perf_eval(0);
+	perf_eval(1);
+	perf_eval(2);
+	perf_eval(3);
+}

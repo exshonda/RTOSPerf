@@ -1,7 +1,7 @@
 #
-#  TOPPERS/ASP Kernel
+#  TOPPERS/FMP Kernel
 #      Toyohashi Open Platform for Embedded Real-Time Systems/
-#      Advanced Standard Profile Kernel
+#      Flexible MultiProcessor Kernel
 # 
 #  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
@@ -37,7 +37,7 @@
 #  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
 #  の責任を負わない．
 # 
-#  $Id: Makefile 1270 2019-10-03 14:04:50Z ertl-hiro $
+#  $Id: Makefile 263 2021-01-08 06:08:59Z ertl-honda $
 # 
 
 #
@@ -49,6 +49,11 @@ all:
 #  ターゲット略称の定義
 #
 TARGET = raspberrypi_pico_gcc
+
+#
+#  プロセッサ数（定義しなければターゲット依存部のデフォルト値が使用される）
+# 
+PRC_NUM = 1
 
 #
 #  プログラミング言語の定義
@@ -87,7 +92,7 @@ KERNEL_FUNCOBJS =
 #
 #  TECSを外すかどうかの定義
 #
-OMIT_TECS = 
+OMIT_TECS = true
 
 #
 #  TECS関係ファイルのディレクトリの定義
@@ -113,7 +118,7 @@ TECSGEN = ruby $(TECSDIR)/tecsgen.rb
 #
 #  オブジェクトファイル名の定義
 #
-OBJNAME = asp
+OBJNAME = fmp
 ifdef OBJEXT
 	OBJFILE = $(OBJNAME).$(OBJEXT)
 	CFG1_OUT = cfg1_out.$(OBJEXT)
@@ -168,6 +173,9 @@ endif
 ifdef OMIT_TECS
 	CDEFS := -DTOPPERS_OMIT_TECS $(CDEFS)
 endif
+ifdef PRC_NUM
+	CDEFS := $(CDEFS) -DTNUM_PRCID=$(PRC_NUM)
+endif
 CDEFS := $(CDEFS) 
 INCLUDES := -I. -I$(SRCDIR)/include $(INCLUDES) -I$(SRCDIR)
 LDFLAGS := $(LDFLAGS) 
@@ -178,19 +186,20 @@ CFLAGS = $(COPTS) $(CDEFS) $(INCLUDES)
 #  アプリケーションプログラムに関する定義
 #
 APPLNAME = perf_act_tsk_single
-APPLDIRS = $(SRCDIR)/perf $(TARGETDIR)
-APPL_CFG = perf_act_tsk_single.cfg
-APPL_CDL = perf_pf.cdl
+APPLDIRS = $(SRCDIR)/perf
+APPL_CFG = $(APPLNAME).cfg
+APPL_CDL = $(APPLNAME).cdl
 
 APPL_DIRS := $(APPLDIRS) $(SRCDIR)/library
 APPL_ASMOBJS :=
 ifdef USE_CXX
-	APPL_CXXOBJS := $(APPLNAME).o rp2040_perf.o
+	APPL_CXXOBJS := $(APPLNAME).o
 	APPL_COBJS :=
 else
-	APPL_COBJS := $(APPLNAME).o rp2040_perf.o 
+	APPL_COBJS := $(APPLNAME).o histogram.o rp2040_perf.o
 endif
-APPL_COBJS := $(APPL_COBJS) log_output.o vasyslog.o t_perror.o strerror.o
+APPL_COBJS := $(APPL_COBJS) $(TECS_USER_COBJS) $(TECS_OUTOFDOMAIN_COBJS) \
+				log_output.o vasyslog.o t_perror.o strerror.o
 APPL_CFLAGS := $(APPL_CFLAGS)
 ifdef APPLDIRS
 	INCLUDES := $(INCLUDES) $(foreach dir,$(APPLDIRS),-I$(dir))
@@ -200,12 +209,17 @@ endif
 #  システムサービスに関する定義
 #
 SYSSVC_DIRS := $(TECSGENDIR) $(SRCDIR)/tecs_kernel \
-				$(SYSSVC_DIRS) $(SRCDIR)/syssvc
+				$(SYSSVC_DIRS) $(SRCDIR)/syssvc \
+				$(TECSDIR)/tecs $(TECSDIR)/tecs/rpc
 SYSSVC_ASMOBJS := $(SYSSVC_ASMOBJS)
-SYSSVC_COBJS := $(SYSSVC_COBJS)  $(TECS_COBJS) \
+SYSSVC_COBJS := $(SYSSVC_COBJS) syslog.o banner.o serial.o logtask.o chip_serial.o $(TECS_KERNEL_COBJS) \
 				$(INIT_TECS_COBJ) $(CXXRTS)
 SYSSVC_CFLAGS := $(SYSSVC_CFLAGS)
-INCLUDES := $(INCLUDES) -I$(TECSGENDIR) -I$(SRCDIR)/tecs_kernel
+INCLUDES := $(INCLUDES) -I$(TECSGENDIR) -I$(SRCDIR)/tecs_kernel \
+				-I$(TECSDIR)/tecs -I$(TECSDIR)/tecs/rpc
+ifeq ($(G_SYSLOG),true)
+	CDEFS := $(CDEFS) -DG_SYSLOG
+endif
 
 #
 #  トレースログ記録のサンプルコードに関する定義
@@ -221,21 +235,39 @@ endif
 .PHONY: all
 ifndef OMIT_TECS
 all: tecs
-	@$(MAKE) check
-#	@$(MAKE) check $(OBJNAME).bin
-#	@$(MAKE) check $(OBJNAME).srec
+	@$(MAKE) kernel_cfg.h $(OFFSET_H) check
+#	@$(MAKE) kernel_cfg.h $(OFFSET_H) check $(OBJNAME).bin
+#	@$(MAKE) kernel_cfg.h $(OFFSET_H) check $(OBJNAME).srec
 else
-all: check
-#all: check $(OBJNAME).bin
-#all: check $(OBJNAME).srec
+all: kernel_cfg.h $(OFFSET_H) check
+#all: kernel_cfg.h $(OFFSET_H) check $(OBJNAME).bin
+#all: kernel_cfg.h $(OFFSET_H) check $(OBJNAME).srec
 endif
 
 ##### 以下は編集しないこと #####
 
 #
+#  プラットフォームの判定
+#
+ifneq (,$(findstring /cygdrive/,$(PATH)))
+    UNAME := Cygwin
+else
+ifeq ($(OS),Windows_NT)
+    UNAME := Windows
+else
+ifeq ($(UNAME),Linux)
+    UNAME := Linux
+ifeq ($(UNAME),Darwin)
+    UNAME := Darwin
+endif
+endif
+endif
+endif
+
+#
 #  コンフィギュレータに関する定義
 #
-CFG_KERNEL := --kernel asp
+CFG_KERNEL := --kernel fmp
 CFG_TABS := --api-table $(SRCDIR)/kernel/kernel_api.def \
 			--symval-table $(SRCDIR)/kernel/kernel_sym.def $(CFG_TABS)
 CFG_ASMOBJS := $(CFG_ASMOBJS)
@@ -243,7 +275,6 @@ CFG_COBJS := kernel_cfg.o $(CFG_COBJS)
 CFG_CFLAGS := -DTOPPERS_CB_TYPE_ONLY $(CFG_CFLAGS)
 
 CFG2_OUT_SRCS := kernel_cfg.h kernel_cfg.c $(CFG2_OUT_SRCS)
-
 #
 #  カーネルに関する定義
 #
@@ -279,6 +310,9 @@ endif
 ifndef TARGET_KERNEL_TRB
 	TARGET_KERNEL_TRB := $(TARGETDIR)/target_kernel.trb
 endif
+ifndef TARGET_OPT_TRB
+	TARGET_OPT_TRB := $(TARGETDIR)/target_opt.trb
+endif
 ifndef TARGET_CHECK_TRB
 	TARGET_CHECK_TRB := $(TARGETDIR)/target_check.trb
 endif
@@ -297,6 +331,7 @@ vpath %.cdl $(APPL_DIRS)
 #
 #  中間オブジェクトファイルを置くディレクトリの処理
 #
+LDFLAGS := -L $(OBJDIR) $(LDFLAGS) 
 APPL_ASMOBJS   := $(addprefix $(OBJDIR)/, $(APPL_ASMOBJS))
 APPL_CXXOBJS   := $(addprefix $(OBJDIR)/, $(APPL_CXXOBJS))
 APPL_COBJS     := $(addprefix $(OBJDIR)/, $(APPL_COBJS))
@@ -368,7 +403,7 @@ cfg1_out.syms: $(CFG1_OUT)
 cfg1_out.srec: $(CFG1_OUT)
 	$(OBJCOPY) -O srec -S $(CFG1_OUT) cfg1_out.srec
 
-$(CFG2_OUT_SRCS) cfg2_out.db: kernel_cfg.timestamp ;
+$(CFG2_OUT_SRCS) $(CFG2_OUT_LDSCRIPT) cfg2_out.db: kernel_cfg.timestamp ;
 kernel_cfg.timestamp: cfg1_out.db cfg1_out.syms cfg1_out.srec
 	$(CFG) --pass 2 $(CFG_KERNEL) $(INCLUDES) -T $(TARGET_KERNEL_TRB)
 
@@ -398,7 +433,7 @@ $(APPL_ASMOBJS) $(SYSSVC_ASMOBJS) $(KERNEL_ASMOBJS) $(CFG_ASMOBJS): \
 #
 #  特別な依存関係の定義
 #
-$(OBJDIR)/tBannerMain.o: $(filter-out $(OBJDIR)/tBannerMain.o,$(ALL_OBJS)) \
+$(OBJDIR)/banner.o: $(filter-out $(OBJDIR)/banner.o,$(ALL2_OBJS)) \
 																$(LIBS_DEP)
 
 #
@@ -468,8 +503,8 @@ realclean: clean
 #  コンフィギュレータが生成したファイルは，共通のコンパイルオプション
 #  のみを付けてコンパイルする．
 #
-ALL_CFG_COBJS = $(CFG_COBJS) $(OBJDIR)/cfg1_out.o
-ALL_CFG_ASMOBJS = $(CFG_ASMOBJS)
+ALL_CFG_COBJS = $(sort $(CFG_COBJS)	$(OBJDIR)/cfg1_out.o)
+ALL_CFG_ASMOBJS = $(sort $(CFG_ASMOBJS))
 
 $(ALL_CFG_COBJS): $(OBJDIR)/%.o: %.c
 	$(CC) -c -o $@ -MD -MP -MF $(DEPDIR)/$*.d $(CFLAGS) $(CFG_CFLAGS) $<
