@@ -96,4 +96,4 @@ OPENOCDDIR = $(SRCDIR)/../openocd-w64/bin/
 # フラッシュへの書き込み
 #
 run: $(OBJFILE)
-	$(OPENOCDDIR)/openocd -f interface/picoprobe.cfg -f target/rp2040.cfg -c "program $(OBJFILE) verify reset exit"
+	$(OPENOCDDIR)/openocd.exe -f interface/picoprobe.cfg -f target/rp2040.cfg -c "program $(OBJFILE) verify reset exit"
