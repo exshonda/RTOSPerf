@@ -100,7 +100,7 @@ void perf_eval(uint_t n)
 	init_hist(1);
 	syslog_fls_log();
 	dly_tsk(1000000);
-#error
+
 	CPU1_PERF_PRE_HOOK;
 
 	for ( i = 0; i < NO_MEASURE; i++ ) {
