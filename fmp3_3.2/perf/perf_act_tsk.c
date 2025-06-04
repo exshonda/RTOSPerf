@@ -176,7 +176,6 @@ void perf_eval(uint_t n)
 	syslog(LOG_NOTICE, "(%d)", n);
 	syslog(LOG_NOTICE, "----------------------------------");
 	print_hist(1);
-//	test_finish();
 }
 
 /*
@@ -185,7 +184,9 @@ void perf_eval(uint_t n)
 void main_task1(intptr_t exinf)
 {
 	syslog(LOG_NOTICE, "perf_act_tsk for fmp3");
+    
 	slp_tsk();
+
 	perf_eval(0);
 	perf_eval(1);
 	perf_eval(2);
@@ -200,14 +201,8 @@ void main_task1(intptr_t exinf)
  */
 void main_task2(intptr_t exinf)
 {
-#ifndef G_SYSLOG
-//	sus_tsk(LOGTASK2);
-#endif /* G_SYSLOG */
 	CPU2_PERF_PRE_HOOK;
 	wup_tsk(MAIN_TASK1);
 	slp_tsk();
 	CPU2_PERF_POST_HOOK;
-#ifndef G_SYSLOG
-//	rsm_tsk(LOGTASK2);
-#endif /* G_SYSLOG */
 }
