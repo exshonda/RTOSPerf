@@ -1,0 +1,9 @@
+20:50:03 **** Clean-only build of configuration Default for project perf_sig_sem ****
+make clean 
+rm -f \#* *~ objs/*.o objs/*.d  check.timestamp
+rm: cannot remove `#*': Invalid argument
+rm: cannot remove `*~': Invalid argument
+make: *** [Makefile:445: clean] Error 1
+
+20:50:03 Build Finished (took 459ms)
+

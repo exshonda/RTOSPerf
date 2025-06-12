@@ -1,0 +1,8 @@
+20:51:50 **** Clean-only build of project ca9_0_bsp ****
+20:51:50 **** Clean-only build of configuration Default for project perf_slp_tsk ****
+make clean 
+make -k clean 
+make: Nothing to be done for 'clean'.
+20:51:51 **** Build of project ca9_0_bsp ****
+make -k all 
+'Finished building libraries'

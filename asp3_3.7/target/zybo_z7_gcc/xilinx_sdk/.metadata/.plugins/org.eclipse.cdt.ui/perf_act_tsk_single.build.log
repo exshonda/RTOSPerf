@@ -1,0 +1,11 @@
+20:50:06 **** Clean-only build of configuration Default for project perf_act_tsk_single ****
+make clean 
+rm -f \#* *~ objs/*.o objs/*.d  check.timestamp
+rm: cannot remove `#*': Invalid argument
+rm: cannot remove `*~': Invalid argument
+rm: cannot remove `objs/*.o': Invalid argument
+rm: cannot remove `objs/*.d': Invalid argument
+make: *** [Makefile:445: clean] Error 1
+
+20:50:07 Build Finished (took 142ms)
+
