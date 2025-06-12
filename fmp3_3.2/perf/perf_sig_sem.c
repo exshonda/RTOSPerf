@@ -113,8 +113,19 @@ void perf_eval(uint_t n)
 			begin_measure(1);
 			sig_sem(SEM1);
 			end_measure(1);
-			chg_pri(0, MID_PRIORITY);
+			chg_pri(0, MAIN_PRIORITY);
 			break;
+			//【３】セマフォに対する待ちタスクが存在する．sig_semを実行
+			//      するタスク（実行タスク）と同じプロセッサに割り付けら
+			//      れており，優先度は実行タスクより高い
+		case 3:
+			chg_pri(0, MID_PRIORITY);
+			act_tsk(TASK1_1);
+			begin_measure(1);
+			sig_sem(SEM1);
+			end_measure(1);
+			chg_pri(0, MAIN_PRIORITY);
+			break;            
 		}
 	}
 
@@ -136,4 +147,5 @@ void main_task1(intptr_t exinf)
 	perf_eval(0);
 	perf_eval(1);
 	perf_eval(2);
+	perf_eval(3);    
 }
